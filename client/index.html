@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>HabitFlow</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"/>
+  <script>window.ENV_API_URL = 'http://localhost:5000/api';</script>
+  
+</head>
+<body>
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🌿</div>
+      <span class="auth-logo-text">HabitFlow</span>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to continue your journey</div>
+      <div class="error-msg" id="login-error"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn btn-primary" id="login-btn" style="margin-top:4px">Sign In</button>
+      <div class="auth-switch">No account? <a id="go-signup">Create one</a></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signup-form" style="display:none">
+      <div class="auth-title">Get started</div>
+      <div class="auth-sub">Create your HabitFlow account</div>
+      <div class="error-msg" id="signup-error"></div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="signup-name" placeholder="Your name" autocomplete="name"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="new-password"/>
+      </div>
+      <button class="btn btn-primary" id="signup-btn" style="margin-top:4px">Create Account</button>
+      <div class="auth-switch">Have an account? <a id="go-login">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app-screen" style="display:none">
+
+  <!-- Top Bar -->
+  <div class="app-topbar">
+    <div class="topbar-left">
+      <span class="topbar-greeting" id="topbar-greeting">morning.</span>
+      <span class="topbar-title" id="topbar-title">Habits</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-month" id="topbar-month">Nov</span>
+      <button class="theme-toggle" id="theme-toggle">🌙</button>
+    </div>
+  </div>
+
+  <!-- Main scrollable content -->
+  <div class="main-scroll">
+
+    <!-- ══ DASHBOARD (Home) ══ -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- Date strip -->
+      <div class="date-strip-wrap">
+        <div class="date-strip-header">
+          <div class="view-toggle">
+            <button class="view-btn active" data-view="daily">Daily</button>
+            <button class="view-btn" data-view="weekly">Weekly</button>
+          </div>
+          <button class="add-new-btn" id="dash-add-btn">+ New</button>
+        </div>
+        <div class="date-strip" id="date-strip"></div>
+      </div>
+
+      <!-- Habit cards for selected day -->
+      <div class="habits-section">
+        <div class="section-title" id="dash-section-label">Today's Habits</div>
+        <div id="dash-habits-list">
+          <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Stats mini -->
+      <div style="padding:0 20px">
+        <div class="stats-mini">
+          <div class="stats-mini-title">Stats</div>
+          <div class="stats-mini-grid">
+            <div class="stats-mini-item">
+              <div class="stats-mini-val" id="sm-tracked">0</div>
+              <div class="stats-mini-label">Habits tracked</div>
+            </div>
+            <div class="stats-mini-item">
+              <div class="stats-mini-val" id="sm-rate">0%</div>
+              <div class="stats-mini-label">Completion rate</div>
+            </div>
+            <div class="stats-mini-item">
+              <div class="stats-mini-val" id="sm-streak">0d</div>
+              <div class="stats-mini-label">Habits streak</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quote -->
+        <div class="quote-card">
+          <p id="daily-quote">Every journey begins with a single step.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HABITS LIST ══ -->
+    <div class="page" id="page-habits">
+      <div class="page-section-header">
+        <div class="page-section-title">My Habits</div>
+        <button class="add-new-btn" id="habits-add-btn">+ Add</button>
+      </div>
+
+      <!-- Add Habit / Edit Current Habits header card (ref design) -->
+      <div style="margin:0 20px 14px;background:var(--accent);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" id="add-habit-hero" onclick="openAddHabit()">
+        <div>
+          <div style="font-family:var(--font-d);font-size:17px;font-weight:700;color:#0a1f1f">Add Habit</div>
+          <div style="font-size:12px;color:rgba(10,31,31,.65);margin-top:2px">Build a new daily routine</div>
+        </div>
+        <span style="font-size:22px;color:#0a1f1f">›</span>
+      </div>
+
+      <div style="margin:0 20px 10px;font-family:var(--font-d);font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Edit Current Habits</div>
+
+      <div id="habits-list-container">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CALENDAR ══ -->
+    <div class="page" id="page-calendar">
+      <div class="cal-page-header">
+        <div class="cal-page-title">Calendar</div>
+        <div class="cal-year-nav">
+          <button class="cal-year-btn" id="cal-prev">‹</button>
+          <div class="cal-year-label" id="cal-label">October</div>
+          <button class="cal-year-btn" id="cal-next">›</button>
+        </div>
+      </div>
+
+      <!-- View tabs: Year Month Week Daily -->
+      <div class="cal-view-tabs">
+        <button class="cal-view-tab" data-calview="year">Year</button>
+        <button class="cal-view-tab active" data-calview="month">Month</button>
+        <button class="cal-view-tab" data-calview="week">Week</button>
+        <button class="cal-view-tab" data-calview="day">Daily</button>
+      </div>
+
+      <div class="cal-wrap">
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- Clicked day detail -->
+      <div id="cal-detail-area"></div>
+
+      <!-- Stats section below calendar -->
+      <div class="cal-stats-section">
+        <div style="font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px">Stats</div>
+        <div class="cal-stat-row" onclick="navigateTo('analytics')">
+          <span class="cal-stat-icon">📈</span>
+          <div style="flex:1">
+            <div class="cal-stat-name">Performance over Time</div>
+            <div class="cal-stat-sub">View streaks and trends</div>
+          </div>
+          <span class="cal-stat-arrow">›</span>
+        </div>
+        <div class="cal-stat-row" id="cal-milestones-row">
+          <span class="cal-stat-icon">🏆</span>
+          <div style="flex:1">
+            <div class="cal-stat-name">Milestones</div>
+            <div class="cal-stat-sub" id="cal-milestone-sub">Loading...</div>
+          </div>
+          <span class="cal-stat-arrow">›</span>
+        </div>
+        <div class="cal-stat-row" id="cal-missed-row">
+          <span class="cal-stat-icon">⚠️</span>
+          <div style="flex:1">
+            <div class="cal-stat-name">Missed days</div>
+            <div class="cal-stat-sub" id="cal-missed-sub">Loading...</div>
+          </div>
+          <span class="cal-stat-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="page" id="page-analytics">
+      <div class="page-section-header">
+        <div class="page-section-title">Analytics</div>
+      </div>
+
+      <div class="analytics-section">
+        <!-- Monthly Progress -->
+<div class="an-section-title">Monthly Progress</div>
+
+<div class="bar-chart-card">
+  <div style="display:flex;gap:10px;margin-bottom:10px">
+    <select id="month-select"></select>
+    <select id="year-select"></select>
+  </div>
+  <canvas id="monthlyChart"></canvas>
+</div>
+<div class="an-section-title">Habit Completion Rate</div>
+
+<div class="bar-chart-card">
+  <canvas id="habitBarChart"></canvas>
+</div>
+        <!-- Overview stats -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden">
+            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent3),var(--accent))"></div>
+            <div style="font-family:var(--font-d);font-size:26px;font-weight:700;color:var(--accent)" id="an-week-val">—</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Weekly avg</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden">
+            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent3),var(--accent))"></div>
+            <div style="font-family:var(--font-d);font-size:26px;font-weight:700;color:var(--accent)" id="an-month-val">—</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Monthly avg</div>
+          </div>
+        </div>
+
+        <div class="an-section-title">This Week</div>
+        <div class="bar-chart-card">
+          <div class="chart-title">Completion rate by day</div>
+          <div class="bar-chart" id="an-bar-chart"></div>
+        </div>
+
+        <div class="an-section-title">Consistency Ranking</div>
+        <div class="ranking-card" id="ranking-list">
+          <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+
+        <!-- Finance chart -->
+        <div class="an-section-title">Expenses This Week</div>
+        <div class="bar-chart-card">
+          <div class="chart-title">Daily spending (₹)</div>
+          <div class="bar-chart" id="fin-bar-chart"></div>
+        </div>
+
+        <div class="an-section-title">Spending by Category</div>
+        <div class="donut-card">
+          <svg id="donut-svg" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EXPENSES ══ -->
+    <div class="page" id="page-expenses">
+      <div class="page-section-header">
+        <div class="page-section-title">Expenses</div>
+        <button class="add-new-btn" id="exp-add-btn" style="border-color:rgba(245,158,11,.3);color:var(--finance2);background:var(--finance-bg)">+ Add</button>
+      </div>
+
+      <!-- Totals -->
+      <div class="exp-top-stats">
+        <div class="exp-stat-card">
+          <div class="exp-stat-val" id="exp-today">₹0</div>
+          <div class="exp-stat-label">Today</div>
+        </div>
+        <div class="exp-stat-card">
+          <div class="exp-stat-val" id="exp-week">₹0</div>
+          <div class="exp-stat-label">Week</div>
+        </div>
+        <div class="exp-stat-card">
+          <div class="exp-stat-val" id="exp-month">₹0</div>
+          <div class="exp-stat-label">Month</div>
+        </div>
+      </div>
+
+      <!-- Filter pills -->
+      <div class="filter-strip">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="today">Today</button>
+        <button class="filter-pill" data-filter="week">This Week</button>
+        <button class="filter-pill" data-filter="month">This Month</button>
+      </div>
+
+      <!-- Category filter -->
+      <div class="cat-filter-wrap">
+        <select id="exp-cat-filter">
+          <option value="">All Categories</option>
+          <option>Food</option><option>Transport</option><option>Shopping</option>
+          <option>Health</option><option>Entertainment</option><option>Education</option>
+          <option>Bills</option><option>Other</option>
+        </select>
+      </div>
+
+      <div class="expense-list" id="expense-list">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /main-scroll -->
+
+  <!-- ══ BOTTOM NAV ══ -->
+  <nav class="bottom-nav">
+    <div class="nav-tab active" data-page="dashboard">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </div>
+    <div class="nav-tab" data-page="habits">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Habits
+    </div>
+    <div class="nav-tab" data-page="calendar">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </div>
+    <div class="nav-tab" data-page="analytics">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </div>
+    <div class="nav-tab" data-page="expenses">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Expense
+    </div>
+  </nav>
+
+</div><!-- /app-screen -->
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Add/Edit Habit -->
+<div class="modal-overlay" id="habit-modal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="habit-modal-title">Add Habit</div>
+      <button class="btn-icon" id="habit-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="habit-id"/>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="habit-name" placeholder="e.g. Exercise daily" maxlength="50"/>
+      </div>
+      <div class="form-group">
+        <label>Tag (optional)</label>
+        <input type="text" id="habit-tag" placeholder="e.g. Stay fit" maxlength="30"/>
+      </div>
+      <div class="form-group">
+        <label>Icon</label>
+        <div class="icon-grid" id="icon-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <div class="color-grid" id="color-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Repeat Days <span style="color:var(--text3);font-weight:400;font-size:11px">(empty = every day)</span></label>
+        <div class="day-selector" id="day-selector"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="habit-cancel-btn">Cancel</button>
+        <button class="btn btn-save" id="habit-save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Expense -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="expense-modal-title">Add Expense</div>
+      <button class="btn-icon" id="expense-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="expense-id"/>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="expense-title" placeholder="e.g. Lunch at restaurant" maxlength="60"/>
+      </div>
+      <div class="form-group">
+        <label>Amount (₹)</label>
+        <input type="number" id="expense-amount" placeholder="500" min="1" step="1"/>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="expense-category">
+          <option value="">Select category</option>
+          <option>Food</option><option>Transport</option><option>Shopping</option>
+          <option>Health</option><option>Entertainment</option><option>Education</option>
+          <option>Bills</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="expense-date"/>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input type="text" id="expense-note" placeholder="Add a note..." maxlength="100"/>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="expense-cancel-btn">Cancel</button>
+        <button class="btn btn-save-finance" id="expense-save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile / logout sheet -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title">Profile</div>
+      <button class="btn-icon" id="profile-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="width:50px;height:50px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--accent)" id="profile-avatar">U</div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:16px;font-weight:700" id="profile-name">User</div>
+          <div style="font-size:12px;color:var(--text3)" id="profile-email">user@email.com</div>
+        </div>
+      </div>
+      
+      <button class="btn btn-cancel" style="width:100%;margin-bottom:8px" id="logout-btn">🚪 Logout</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="api.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="app.js"></script>
+</body>
+</html>
